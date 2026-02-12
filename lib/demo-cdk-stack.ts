@@ -259,3 +259,75 @@ export class DemoCdkStack extends cdk.Stack {
     });
   }
 }
+
+// ============================================
+// SQL Server Stack for Bahrain Region (me-south-1)
+// ============================================
+export class SqlServerBahrainStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // VPC for SQL Server in Bahrain
+    const vpc = new ec2.Vpc(this, 'SqlServerVpc', {
+      maxAzs: 2,
+      natGateways: 1,
+      subnetConfiguration: [
+        {
+          name: 'Public',
+          subnetType: ec2.SubnetType.PUBLIC,
+          cidrMask: 24,
+        },
+        {
+          name: 'Private',
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+          cidrMask: 24,
+        },
+        {
+          name: 'Isolated',
+          subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+          cidrMask: 24,
+        },
+      ],
+    });
+
+    // Security group for SQL Server
+    const sqlServerSecurityGroup = new ec2.SecurityGroup(this, 'SqlServerSecurityGroup', {
+      vpc,
+      description: 'Security group for SQL Server RDS instance',
+      allowAllOutbound: false,
+    });
+
+    // SQL Server Enterprise Multi-AZ in Bahrain (db.r5.24xlarge)
+    const sqlServerDatabase = new rds.DatabaseInstance(this, 'SqlServerEnterprise', {
+      engine: rds.DatabaseInstanceEngine.sqlServerEe({
+        version: rds.SqlServerEngineVersion.VER_15,
+      }),
+      instanceType: ec2.InstanceType.of(
+        ec2.InstanceClass.R5,
+        ec2.InstanceSize.XLARGE24
+      ),
+      vpc,
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
+      securityGroups: [sqlServerSecurityGroup],
+      allocatedStorage: 200,
+      maxAllocatedStorage: 1000,
+      multiAz: true,
+      licenseModel: rds.LicenseModel.LICENSE_INCLUDED,
+      deletionProtection: false,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // Outputs
+    new cdk.CfnOutput(this, 'SqlServerEndpoint', {
+      value: sqlServerDatabase.dbInstanceEndpointAddress,
+      description: 'SQL Server Enterprise endpoint',
+    });
+
+    new cdk.CfnOutput(this, 'SqlServerVpcId', {
+      value: vpc.vpcId,
+      description: 'SQL Server VPC ID',
+    });
+  }
+}
