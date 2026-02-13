@@ -178,7 +178,7 @@ export class DemoCdkStack extends cdk.Stack {
     const workerTierAsg = new autoscaling.AutoScalingGroup(this, 'WorkerTierAsg', {
       vpc,
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
-      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MEDIUM),
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.LARGE),
       machineImage: ami,
       role: ec2Role,
       securityGroup: ec2SecurityGroup,
