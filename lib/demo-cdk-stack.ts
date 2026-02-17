@@ -148,7 +148,7 @@ export class DemoCdkStack extends cdk.Stack {
     const webTierAsg = new autoscaling.AutoScalingGroup(this, 'WebTierAsg', {
       vpc,
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
-      instanceType: ec2.InstanceType.of(ec2.InstanceClass.M4, ec2.InstanceSize.LARGE),
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.M6G, ec2.InstanceSize.MEDIUM),
       machineImage: ami,
       role: ec2Role,
       securityGroup: ec2SecurityGroup,
